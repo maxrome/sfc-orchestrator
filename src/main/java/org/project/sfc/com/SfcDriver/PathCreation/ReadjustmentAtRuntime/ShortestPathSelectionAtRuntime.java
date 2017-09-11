@@ -7,11 +7,8 @@ import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
 import org.project.sfc.com.SfcImpl.Broker.SfcBroker;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.NeutronClient;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFPdict;
-import org.project.sfc.com.SfcModel.SFCdict.SfcDict;
-import org.project.sfc.com.SfcModel.SFCdict.Status;
-import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
+import org.project.sfc.com.SfcModel.SFCdict.*;
+import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
 import org.project.sfc.com.SfcRepository.SFCCdictRepo;
 import org.project.sfc.com.SfcRepository.SFCdictRepo;
 import org.project.sfc.com.SfcRepository.SFPdictRepo;
@@ -21,17 +18,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.annotation.PostConstruct;
 
@@ -466,7 +460,7 @@ public class ShortestPathSelectionAtRuntime {
     Chain_Data.setPaths(newPaths);
 
     //SFC_driver.DeleteSFP(Chain_Data.getRspID(), Chain_Data.isSymm());
-    SFCdict sfc_info = new SFCdict();
+    SfcDictWrapper sfc_info = new SfcDictWrapper();
     sfc_info.setSfcDict(Chain_Data);
     String new_instance_id = SFC_driver.CreateSFP(sfc_info, VNFs);
 

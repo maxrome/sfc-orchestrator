@@ -6,7 +6,7 @@ import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
 import org.project.sfc.com.SfcImpl.Broker.SfcBroker;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.NeutronClient;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFCdict;
+import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
 import org.project.sfc.com.SfcModel.SFCdict.SFPdict;
 import org.project.sfc.com.SfcModel.SFCdict.SfcDict;
 import org.project.sfc.com.SfcModel.SFCdict.Status;
@@ -412,7 +412,7 @@ public class LoadBalancedPathSelection {
     Chain_Data.setPaths(newPaths);
 
     SFC_driver.DeleteSFP(Chain_Data.getInstanceId(), Chain_Data.getSymmetrical());
-    SFCdict sfc_info = new SFCdict();
+    SfcDictWrapper sfc_info = new SfcDictWrapper();
     sfc_info.setSfcDict(Chain_Data);
     String new_instance_id = SFC_driver.CreateSFP(sfc_info, VNFs);
     logger.debug("[NEW Path readjusted ] " + new_instance_id);

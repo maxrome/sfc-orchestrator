@@ -21,7 +21,7 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan(basePackages = "org.project.sfc.com")
 @EnableJpaRepositories("org.project.sfc.com.SfcRepository")
 @EntityScan(
-  basePackages = {"org.project.sfc.com.SfcModel.SFCdict", "org.project.sfc.com.SfcModel.SFCCdict"}
+  basePackages = {"org.project.sfc.com.SfcModel.SfcDictWrapper", "org.project.sfc.com.SfcModel.SFCCdict"}
 )
 @EnableScheduling
 public class Main {

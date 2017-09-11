@@ -1,6 +1,5 @@
 package org.project.sfc.com.SfcRepository;
 
-import org.project.sfc.com.SfcModel.SFCdict.SFCdict;
 import org.project.sfc.com.SfcModel.SFCdict.SfcDict;
 
 /**

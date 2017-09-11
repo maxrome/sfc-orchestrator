@@ -1,9 +1,7 @@
 package org.project.sfc.com.SfcImpl.Test_SFC_driver;
 
-import org.apache.http.HttpResponse;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFCJSON.SFCJSON;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFCdict;
+import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
 import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +19,7 @@ import java.util.Map;
 public class Test_SFC extends SFC {
 
   @Override
-  public void CreateSFC(SFCdict sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
+  public void CreateSFC(SfcDictWrapper sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
     //create Test_SFC
 
   }
@@ -38,7 +36,7 @@ public class Test_SFC extends SFC {
   }
 
   @Override
-  public String CreateSFP(SFCdict sfc_dict, Map<Integer, VNFdict> vnf_dict) {
+  public String CreateSFP(SfcDictWrapper sfc_dict, Map<Integer, VNFdict> vnf_dict) {
     return "created_new_sfp";
   }
 

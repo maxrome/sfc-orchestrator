@@ -2,22 +2,11 @@
 package org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.*;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.NetworkJSON.NetworkJSON;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.NetworkJSON.NetworkTopology;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.OpenFlowPluginTable.Match;
@@ -34,22 +23,17 @@ import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFJSON.*;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFPJSON.SFPJSON;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFPJSON.ServiceFunctionPath;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFPJSON.ServiceFunctionPaths;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.Token.Token;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC_Classifier.SFC_Classifier;
 import org.project.sfc.com.SfcInterfaces.SFC;
 import org.project.sfc.com.SfcModel.SFCCdict.AclMatchCriteria;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFCdict;
+import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFPJSON.ServicePathHop;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SfcOfRendererConfigJSON.SfcOfRendererConfig;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SfcOfRendererConfigJSON.SfcOfRendererConfigJSON;
 import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
 import org.project.sfc.com.openbaton_nfvo.utils.ConfigReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.RSPJSON.RSPJSON;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -59,7 +43,6 @@ import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mah on 1/27/16.
@@ -837,7 +820,7 @@ public class Opendaylight extends SFC {
   }
 
   @Override
-  public void CreateSFC(SFCdict sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
+  public void CreateSFC(SfcDictWrapper sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
     //create Test_SFC
     SFCJSON sfc_json = create_sfc_json(sfc_dict, vnf_dict);
     ResponseEntity<String> sfc_result = createODLsfc(sfc_json);
@@ -1051,7 +1034,7 @@ public class Opendaylight extends SFC {
   }
 
   @Override
-  public String CreateSFP(SFCdict sfc_dict, Map<Integer, VNFdict> vnf_dict) {
+  public String CreateSFP(SfcDictWrapper sfc_dict, Map<Integer, VNFdict> vnf_dict) {
 
     SFPJSON sfp_json = create_sfp_json(sfc_dict, vnf_dict);
     ResponseEntity<String> sfp_result = createODLsfp(sfp_json);
@@ -1095,7 +1078,7 @@ public class Opendaylight extends SFC {
     return rsp_json;
   }
 
-  public static SFPJSON create_sfp_json(SFCdict sfc_dict, Map<Integer, VNFdict> vnf_dict) {
+  public static SFPJSON create_sfp_json(SfcDictWrapper sfc_dict, Map<Integer, VNFdict> vnf_dict) {
     SFPJSON sfp_json = new SFPJSON();
     ServiceFunctionPath sfp = new ServiceFunctionPath();
     sfp.setName("Path-" + sfc_dict.getSfcDict().getName());
@@ -1115,7 +1098,7 @@ public class Opendaylight extends SFC {
     return sfp_json;
   }
 
-  public static SFCJSON create_sfc_json(SFCdict sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
+  public static SFCJSON create_sfc_json(SfcDictWrapper sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
     ServiceFunctionChain sfc = new ServiceFunctionChain();
 
     SFCJSON sfc_json = new SFCJSON();

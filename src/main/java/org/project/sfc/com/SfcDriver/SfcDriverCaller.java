@@ -18,19 +18,15 @@ import org.project.sfc.com.SfcImpl.Broker.SfcBroker;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.NeutronClient;
 import org.project.sfc.com.SfcModel.SFCCdict.AclMatchCriteria;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFCdict;
+import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
 import org.project.sfc.com.SfcModel.SFCdict.SFPdict;
 import org.project.sfc.com.SfcModel.SFCdict.SfcDict;
 import org.project.sfc.com.SfcModel.SFCdict.Status;
 import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
 import org.project.sfc.com.SfcRepository.SFCCdictRepo;
 import org.project.sfc.com.SfcRepository.SFCdictRepo;
-import org.project.sfc.com.SfcRepository.SFCdictRepoCustom;
-import org.project.sfc.com.SfcRepository.SFCCdictRepoCustom;
 import org.project.sfc.com.SfcRepository.SFPdictRepo;
-import org.project.sfc.com.SfcRepository.SFPdictRepoCustom;
 import org.project.sfc.com.SfcRepository.VNFdictRepo;
-import org.project.sfc.com.SfcRepository.VNFdictRepoCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -234,7 +230,7 @@ public class SfcDriverCaller {
         sfcData.setPaths(newPaths);
         SFC_driver.DeleteSFP(sfcData.getInstanceId(), sfcData.getSymmetrical());
 
-        SFCdict sfc_info = new SFCdict();
+        SfcDictWrapper sfc_info = new SfcDictWrapper();
         sfc_info.setSfcDict(sfcData);
 
         String new_instance_id = SFC_driver.CreateSFP(sfc_info, list_vnf_dicts.get(counter));
@@ -602,7 +598,7 @@ public class SfcDriverCaller {
         //  Involved_SFCs.get(SFCdata_counter_.getKey()).setChainSFs(list_vnf_dicts.get(counter));
         Involved_SFCs.get(SFCdata_counter_.getKey()).setPaths(newPaths);
 
-        SFCdict sfc_info = new SFCdict();
+        SfcDictWrapper sfc_info = new SfcDictWrapper();
         sfc_info.setSfcDict(Involved_SFCs.get(SFCdata_counter_.getKey()));
 
         String new_instance_id = SFC_driver.CreateSFP(sfc_info, list_vnf_dicts.get(counter));
@@ -811,7 +807,7 @@ public class SfcDriverCaller {
       NetworkServiceRecord nsr) {
 
     List<String> chain = new ArrayList<String>();
-    SFCdict sfc_test = new SFCdict();
+    SfcDictWrapper sfc_test = new SfcDictWrapper();
     SfcDict sfc_dict_test = new SfcDict();
     SFCCdict sfcc_dict = new SFCCdict();
 
