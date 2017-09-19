@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 import org.openbaton.catalogue.util.IdGenerator;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -45,6 +46,10 @@ public class VNFdict implements Serializable {
   @Expose
   @Enumerated(EnumType.STRING)
   private Status status;
+
+  @SerializedName("portIdList")
+  private List<String> portIdList;
+
   /**
    *
    * @return The id
@@ -119,6 +124,14 @@ public class VNFdict implements Serializable {
 
   public void setStatus(Status status) {
     this.status = status;
+  }
+
+  public List<String> getPortIdList() {
+    return portIdList;
+  }
+
+  public void setPortIdList(List<String> portIdList) {
+    this.portIdList = portIdList;
   }
 
   @Override

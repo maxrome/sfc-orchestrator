@@ -127,7 +127,11 @@ public class OpenbatonEventSubscription implements CommandLineRunner {
           projectId = project.getId();
         }
       }
-      if (projectId == null) throw new SDKException("Project not found");
+      //if (projectId == null) throw new SDKException("Project not found");
+      if (projectId == null) {
+        Throwable throwable = new Throwable();
+        throw new SDKException("Project not found", throwable.getStackTrace(), "projectId == null");
+      }
       requestor.setProjectId(projectId);
     }
   }

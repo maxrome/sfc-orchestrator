@@ -1098,7 +1098,8 @@ public class Opendaylight extends SFC {
     return sfp_json;
   }
 
-  public static SFCJSON create_sfc_json(SfcDictWrapper sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
+  public static SFCJSON create_sfc_json(
+      SfcDictWrapper sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
     ServiceFunctionChain sfc = new ServiceFunctionChain();
 
     SFCJSON sfc_json = new SFCJSON();

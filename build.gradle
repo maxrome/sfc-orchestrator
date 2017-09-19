@@ -12,8 +12,8 @@ buildscript {
          
     
 }
-apply plugin: 'spring-boot'
 
+apply plugin: 'spring-boot'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
@@ -48,20 +48,25 @@ project.ext {
 repositories {
     mavenCentral()
     mavenLocal()
-    maven {
-        url "http://get.openbaton.org:8081/nexus/content/groups/public"
-    }
+
 }
 dependencies {
-    compile 'org.openbaton:sdk:3.9.9'
-    compile 'org.openbaton:catalogue:3.9.9'
+
+    compile group: 'org.pacesys', name: 'openstack4j', version: '3.0.5-SNAPSHOT'
+    compile group: 'org.pacesys', name: 'openstack4j-core', version: '3.0.5-SNAPSHOT'
+    compile group: 'org.pacesys', name: 'openstack4j-parent', version: '3.0.5-SNAPSHOT'
+
+    compile group: 'org.openbaton', name: 'sdk', version: '4.0.0'
+    //compile group: 'org.openbaton', name: 'catalogue', version: '4.0.0'
+    //compile files('/home/ads/IdeaProjects/NFVOmah88/build/libs/openbaton-3.2.1-SNAPSHOT.jar')
+    compile files('/home/ads/IdeaProjects/maxrome-openbaton-libs/catalogue/build/libs/catalogue-3.2.2-SNAPSHOT.jar')
+    //compile files('/home/ads/IdeaProjects/openbaton-libs_mah88/catalogue/build/libs/catalogue-3.2.2-SNAPSHOT.jar')
+    //compile group: 'org.openbaton', name: 'catalogue', version: '3.2.2-SNAPSHOT'
 
     compile 'org.openbaton:plugin:3.0.0'
     compile 'org.openbaton:vim-drivers:3.0.0'
     compile 'org.openbaton:monitoring:3.0.0'
     //compile 'commons-dbcp:commons-dbcp:1.4'
-
-
 
    // compile 'org.springframework.boot:spring-boot-starter-test:' + springBootVersion
     compile 'org.springframework.boot:spring-boot:' + springBootVersion
@@ -83,6 +88,7 @@ dependencies {
     compile 'org.springframework:spring-jdbc:' + springVersion
     compile 'org.springframework.boot:spring-boot-starter-jdbc:' + springBootVersion
 
+    compile 'com.google.code.gson:gson:2.2.+'
 
     //compile 'org.hsqldb:hsqldb:2.3.2'
     

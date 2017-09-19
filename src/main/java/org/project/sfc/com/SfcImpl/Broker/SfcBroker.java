@@ -2,6 +2,7 @@ package org.project.sfc.com.SfcImpl.Broker;
 
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.Opendaylight;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC_Classifier.SFC_Classifier;
+import org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver.OpenstackSFC;
 import org.project.sfc.com.SfcInterfaces.SFC;
 import org.project.sfc.com.SfcInterfaces.SFCclassifier;
 import org.project.sfc.com.SfcInterfaces.SFCinterfaces;
@@ -51,6 +52,10 @@ public class SfcBroker implements org.project.sfc.com.SfcInterfaces.SfcBroker {
     if (type == "opendaylight") {
 
       return new Opendaylight();
+    } else if (type == "openstaksfc") {
+
+      return new OpenstackSFC();
+
     } else {
       return new Opendaylight();
     }

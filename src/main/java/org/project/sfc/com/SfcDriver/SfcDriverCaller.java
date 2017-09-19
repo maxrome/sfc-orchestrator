@@ -1,17 +1,17 @@
 package org.project.sfc.com.SfcDriver;
 
 import org.openbaton.catalogue.mano.common.Ip;
+import org.openbaton.catalogue.mano.descriptor.Connection;
 import org.openbaton.catalogue.mano.descriptor.NetworkForwardingPath;
 import org.openbaton.catalogue.mano.descriptor.VirtualDeploymentUnit;
 import org.openbaton.catalogue.mano.record.NetworkServiceRecord;
 import org.openbaton.catalogue.mano.record.VNFCInstance;
 import org.openbaton.catalogue.mano.record.VNFForwardingGraphRecord;
 import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
-import org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation.RoundRobinSelection;
-import org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation.ShortestPathSelection;
-import org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation.TradeOffShortestPathLoadBalancingSelection;
+import org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation.OpenstackSFCPathSelection;
+
 import org.project.sfc.com.SfcDriver.PathCreation.ReadjustmentAtRuntime.LoadBalancedPathSelection;
-import org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation.RandomPathSelection;
+
 import org.project.sfc.com.SfcDriver.PathCreation.ReadjustmentAtRuntime.ShortestPathSelectionAtRuntime;
 import org.project.sfc.com.SfcDriver.PathCreation.ReadjustmentAtRuntime.TradeOffSpLbSelection;
 import org.project.sfc.com.SfcImpl.Broker.SfcBroker;
@@ -657,11 +657,12 @@ public class SfcDriverCaller {
     for (VNFForwardingGraphRecord vnffgr : nsr.getVnffgr()) {
       Set<VirtualNetworkFunctionRecord> vnf_members = new HashSet<VirtualNetworkFunctionRecord>();
       for (NetworkForwardingPath nfp : vnffgr.getNetwork_forwarding_path()) {
-        for (Map.Entry<String, String> entry : nfp.getConnection().entrySet()) {
+
+        for (Connection entry : nfp.getConnection()) {
 
           for (VirtualNetworkFunctionRecord vnfr : vnfrs) {
 
-            if (vnfr.getName().equals(entry.getValue())) {
+            if (vnfr.getName().equals(entry.getVNFD())) {
               vnf_members.add(vnfr);
             }
           }
@@ -769,7 +770,10 @@ public class SfcDriverCaller {
 
     HashMap<Integer, VNFdict> vnfdicts = new HashMap<Integer, VNFdict>();
     log.info("[SFs-Creation] ");
-    if (SfSchedulingType.equals("roundrobin")) {
+
+    OpenstackSFCPathSelection OSFCPS = new OpenstackSFCPathSelection();
+
+    /*if (SfSchedulingType.equals("roundrobin")) {
       log.debug("[Path-Selection-Algorithm]  Round Robin");
 
       RoundRobinSelection RRS = new RoundRobinSelection();
@@ -794,7 +798,7 @@ public class SfcDriverCaller {
       RandomPathSelection RPS = new RandomPathSelection();
 
       vnfdicts = RPS.CreatePath(vnfrs, vnffgr, nsr);
-    }
+    }*/
 
     log.info("[SFs-Creation-Finsihed] ");
 
@@ -816,15 +820,15 @@ public class SfcDriverCaller {
     for (NetworkForwardingPath nfp : vnffgr.getNetwork_forwarding_path()) {
 
       for (int counter = 0; counter < nfp.getConnection().size(); counter++) {
-        for (Map.Entry<String, String> entry : nfp.getConnection().entrySet()) {
-          Integer k = Integer.valueOf(entry.getKey());
+        for (Connection entry : nfp.getConnection()) {
+          //Integer k = Integer.valueOf(entry.getKey());
 
-          int x = k.intValue();
+          //int x = k.intValue();
 
-          if (counter == x) {
+          //if (counter == x) {
 
-            chain.add(entry.getValue());
-          }
+          chain.add(entry.getVNFD());
+          //}
         }
       }
     }
@@ -961,7 +965,8 @@ public class SfcDriverCaller {
 
   public boolean Delete(String vnffgID, String SfSchedulingType, boolean lastSFC)
       throws IOException {
-    if (SfSchedulingType.equals("roundrobin")) {
+
+    /*if (SfSchedulingType.equals("roundrobin")) {
       RoundRobinSelection RRS = new RoundRobinSelection();
       RRS.Delete(sfcManag.query(vnffgID).getPaths().get(0).getPath_SFs());
       log.info("Remove the mapCOUNT  RoundRobin " + vnffgID);
@@ -971,7 +976,7 @@ public class SfcDriverCaller {
           new TradeOffShortestPathLoadBalancingSelection(SDN_Controller_driver_type);
       TOSPLB.Delete(sfcManag.query(vnffgID).getPaths().get(0).getPath_SFs());
       log.info("Remove the mapCOUNT Tradeoff  " + vnffgID);
-    }
+    }*/
     log.info("delete NSR ID:  " + vnffgID);
 
     SfcDict sfc = sfcManag.query(vnffgID);
