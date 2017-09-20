@@ -3,6 +3,7 @@ package org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation;
 import org.openbaton.catalogue.mano.common.Ip;
 import org.openbaton.catalogue.mano.descriptor.Connection;
 import org.openbaton.catalogue.mano.descriptor.NetworkForwardingPath;
+import org.openbaton.catalogue.mano.descriptor.VNFDConnectionPoint;
 import org.openbaton.catalogue.mano.descriptor.VirtualDeploymentUnit;
 import org.openbaton.catalogue.mano.record.NetworkServiceRecord;
 import org.openbaton.catalogue.mano.record.VNFCInstance;
@@ -11,7 +12,9 @@ import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
 import org.openbaton.exceptions.VimDriverException;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.NeutronClient;
 import org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver.OpenstackUtils;
+import org.project.sfc.com.SfcModel.SFCdict.CPDict;
 import org.project.sfc.com.SfcModel.SFCdict.Status;
+import org.project.sfc.com.SfcModel.SFCdict.VDUDict;
 import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,42 +38,46 @@ public class OpenstackSFCPathSelection {
   }
 
   public VNFdict selectVNF(VirtualNetworkFunctionRecord vnfr) throws VimDriverException {
-    List<String> VNF_instances = new ArrayList<String>();
-
-    for (VirtualDeploymentUnit vdu_x : vnfr.getVdu()) {
-      for (VNFCInstance vnfc_instance : vdu_x.getVnfc_instance()) {
-        VNF_instances.add(vnfc_instance.getHostname());
-      }
-    }
-
     VNFdict new_vnf = new VNFdict();
 
-    Random randomizer = new Random();
-    String VNF_instance_selected = VNF_instances.get(randomizer.nextInt(VNF_instances.size()));
-    new_vnf.setName(VNF_instance_selected);
-    new_vnf.setType(vnfr.getType());
     for (VirtualDeploymentUnit vdu_x : vnfr.getVdu()) {
+
+      VDUDict vduDict = new VDUDict();
+      new_vnf.getVduList().add(vduDict);
+
       for (VNFCInstance vnfc_instance : vdu_x.getVnfc_instance()) {
 
-        if (vnfc_instance.getHostname() == VNF_instance_selected) {
-          new_vnf.setId(vnfc_instance.getId());
-          new_vnf.setStatus(Status.ACTIVE);
+        new_vnf.setName(vnfc_instance.getHostname()); //ci mette l'hostname
+        new_vnf.setType(vnfr.getType());
 
-          for (Ip ip : vnfc_instance.getIps()) {
-            new_vnf.setIP(ip.getIp());
-            logger.debug(
-                "[Select-VNF] Setting the IP  for " + new_vnf.getName() + " : " + new_vnf.getIP());
+        new_vnf.setId(vnfc_instance.getId());
+        new_vnf.setStatus(Status.ACTIVE);
 
-            //osUtils.getPortIdList(vnfc_instance.getId(), vdu_x.getProjectId());
+        Set<VNFDConnectionPoint> listConnectionPoints = vnfc_instance.getConnection_point();
+        List<CPDict> cpList = new ArrayList<CPDict>();
+        for (VNFDConnectionPoint VNFDCP : listConnectionPoints) {
 
-            new_vnf.setPortIdList(
-                osUtils.getPortIdList(vnfc_instance.getId(), vdu_x.getProjectId()));
-
-            new_vnf.setNeutronPortId(NC.getNeutronPortID(ip.getIp()));
-
-            break;
-          }
+          CPDict cp = new CPDict();
+          cp.setPortIdList(
+              osUtils.getPortIdList(
+                  vnfc_instance.getId(), vdu_x.getProjectId(), VNFDCP.getVirtual_link_reference()));
+          cpList.add(cp);
         }
+        vduDict.setCPList(cpList);
+
+        for (Ip ip : vnfc_instance.getIps()) {
+          new_vnf.setIP(ip.getIp());
+          logger.debug(
+              "[Select-VNF] Setting the IP  for " + new_vnf.getName() + " : " + new_vnf.getIP());
+
+          new_vnf.setNeutronPortId(NC.getNeutronPortID(ip.getIp()));
+
+          break;
+        }
+
+        //take only the first vnfc on descriptor array
+        break;
+        //}
       }
     }
 

@@ -47,8 +47,8 @@ public class VNFdict implements Serializable {
   @Enumerated(EnumType.STRING)
   private Status status;
 
-  @SerializedName("portIdList")
-  private List<String> portIdList;
+  @SerializedName("vduList")
+  private List<VDUDict> vduList;
 
   /**
    *
@@ -126,12 +126,12 @@ public class VNFdict implements Serializable {
     this.status = status;
   }
 
-  public List<String> getPortIdList() {
-    return portIdList;
+  public List<VDUDict> getVduList() {
+    return vduList;
   }
 
-  public void setPortIdList(List<String> portIdList) {
-    this.portIdList = portIdList;
+  public void setVduList(List<VDUDict> vduList) {
+    this.vduList = vduList;
   }
 
   @Override

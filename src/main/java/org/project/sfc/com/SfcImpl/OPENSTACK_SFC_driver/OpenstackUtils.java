@@ -7,6 +7,7 @@ import org.openstack4j.api.exceptions.AuthenticationException;
 import org.openstack4j.api.networking.PortService;
 import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.identity.v3.Region;
+import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.Port;
 import org.openstack4j.model.network.options.PortListOptions;
 import org.openstack4j.openstack.OSFactory;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,16 +37,36 @@ public class OpenstackUtils {
   }
 
   /**
-   *
    * @param deviceId Instance id of vm
+   * @param tenantId
+   * @param networkName
    */
-  public List<String> getPortIdList(String deviceId, String tenantId) throws VimDriverException {
+  public List<String> getPortIdList(String deviceId, String tenantId, String networkName)
+      throws VimDriverException {
 
     List<String> portIdlist = new ArrayList<String>();
 
     OSClient os = authenticate(tenantId);
 
-    PortListOptions plo = PortListOptions.create().deviceId(deviceId).tenantId(tenantId);
+    HashMap<String, String> map = new HashMap<String, String>();
+    map.put("tenant_id", tenantId);
+    map.put("name", networkName); //check if the filter is name!!!
+
+    List<? extends Network> list = os.networking().network().list(map);
+    if (!list.isEmpty()) {
+      log.warn(
+          "OpenstackUtils - getPortIdList - List of Network is empty to deviceId : "
+              + deviceId
+              + " - tenant_id : "
+              + tenantId);
+      return portIdlist;
+    }
+
+    Network network = list.get(0);
+    String networkId = network.getId();
+    //Filtering also networking to match the connection point
+    PortListOptions plo =
+        PortListOptions.create().deviceId(deviceId).tenantId(tenantId).networkId(networkId);
     List<? extends Port> ports = os.networking().port().list(plo);
 
     for (Port p : ports) {
@@ -54,6 +76,9 @@ public class OpenstackUtils {
     return portIdlist;
   }
 
+  /**
+   * @param tenantId
+   */
   public OSClient authenticate(String tenantId) throws VimDriverException {
 
     VimInstance viminstance = new VimInstance();

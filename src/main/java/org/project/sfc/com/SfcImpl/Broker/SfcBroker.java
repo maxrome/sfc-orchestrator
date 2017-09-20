@@ -3,6 +3,7 @@ package org.project.sfc.com.SfcImpl.Broker;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.Opendaylight;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC_Classifier.SFC_Classifier;
 import org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver.OpenstackSFC;
+import org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver.OpenstackSFCClassifier;
 import org.project.sfc.com.SfcInterfaces.SFC;
 import org.project.sfc.com.SfcInterfaces.SFCclassifier;
 import org.project.sfc.com.SfcInterfaces.SFCinterfaces;
@@ -49,10 +50,10 @@ public class SfcBroker implements org.project.sfc.com.SfcInterfaces.SfcBroker {
 
   @Override
   public SFC getSFC(String type) throws IOException {
-    if (type == "opendaylight") {
+    if (type.equals("opendaylight")) {
 
       return new Opendaylight();
-    } else if (type == "openstaksfc") {
+    } else if (type.equals("openstacksfc")) {
 
       return new OpenstackSFC();
 
@@ -74,9 +75,13 @@ public class SfcBroker implements org.project.sfc.com.SfcInterfaces.SfcBroker {
 
   @Override
   public SFCclassifier getSfcClassifier(String type) throws IOException {
-    if (type == "opendaylight") {
+    if (type.equals("opendaylight")) {
 
       return new SFC_Classifier();
+    }else if (type.equals("openstacksfc")) {
+
+      return new OpenstackSFCClassifier();
+
     } else {
       return new SFC_Classifier();
     }

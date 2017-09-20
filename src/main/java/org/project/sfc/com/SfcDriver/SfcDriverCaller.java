@@ -3,11 +3,13 @@ package org.project.sfc.com.SfcDriver;
 import org.openbaton.catalogue.mano.common.Ip;
 import org.openbaton.catalogue.mano.descriptor.Connection;
 import org.openbaton.catalogue.mano.descriptor.NetworkForwardingPath;
+import org.openbaton.catalogue.mano.descriptor.VNFDConnectionPoint;
 import org.openbaton.catalogue.mano.descriptor.VirtualDeploymentUnit;
 import org.openbaton.catalogue.mano.record.NetworkServiceRecord;
 import org.openbaton.catalogue.mano.record.VNFCInstance;
 import org.openbaton.catalogue.mano.record.VNFForwardingGraphRecord;
 import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
+import org.openbaton.exceptions.VimDriverException;
 import org.project.sfc.com.SfcDriver.PathCreation.DeploymentPathCreation.OpenstackSFCPathSelection;
 
 import org.project.sfc.com.SfcDriver.PathCreation.ReadjustmentAtRuntime.LoadBalancedPathSelection;
@@ -16,13 +18,10 @@ import org.project.sfc.com.SfcDriver.PathCreation.ReadjustmentAtRuntime.Shortest
 import org.project.sfc.com.SfcDriver.PathCreation.ReadjustmentAtRuntime.TradeOffSpLbSelection;
 import org.project.sfc.com.SfcImpl.Broker.SfcBroker;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.NeutronClient;
+import org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver.OpenstackUtils;
 import org.project.sfc.com.SfcModel.SFCCdict.AclMatchCriteria;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
-import org.project.sfc.com.SfcModel.SFCdict.SFPdict;
-import org.project.sfc.com.SfcModel.SFCdict.SfcDict;
-import org.project.sfc.com.SfcModel.SFCdict.Status;
-import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
+import org.project.sfc.com.SfcModel.SFCdict.*;
 import org.project.sfc.com.SfcRepository.SFCCdictRepo;
 import org.project.sfc.com.SfcRepository.SFCdictRepo;
 import org.project.sfc.com.SfcRepository.SFPdictRepo;
@@ -51,6 +50,7 @@ public class SfcDriverCaller {
   Logger log = LoggerFactory.getLogger(this.getClass());
 
   NeutronClient NC;
+  OpenstackUtils osUtils;
   //SFC sfcc_db = org.project.sfc.com.SfcHandler.SFC.getInstance();
   SfcBroker broker = new SfcBroker();
   org.project.sfc.com.SfcInterfaces.SFC SFC_driver;
@@ -73,6 +73,7 @@ public class SfcDriverCaller {
     SFC_driver = broker.getSFC(sfcDriver);
     SFC_Classifier_driver = broker.getSfcClassifier(sfcDriver);
     NC = new NeutronClient();
+    osUtils = new OpenstackUtils();
 
     //  LBPath = new LoadBalancedPathSelection(sfcDriver);
     //SPpath = new ShortestPathSelectionAtRuntime();
@@ -649,7 +650,7 @@ public class SfcDriverCaller {
 
   public boolean Create(
       Set<VirtualNetworkFunctionRecord> vnfrs, NetworkServiceRecord nsr, String SfSchedulingType)
-      throws IOException {
+          throws IOException, VimDriverException {
 
     log.info("[SFC-Creation] start");
 
@@ -702,7 +703,7 @@ public class SfcDriverCaller {
       NetworkServiceRecord nsr,
       VNFForwardingGraphRecord vnffgr,
       String SfSchedulingType)
-      throws IOException {
+          throws IOException, VimDriverException {
 
     // Create SFs and add them to the Data base
     HashMap<Integer, VNFdict> list_vnfs = new HashMap<>();
@@ -710,13 +711,30 @@ public class SfcDriverCaller {
     int counter = 0;
 
     for (VirtualNetworkFunctionRecord vnfr : vnfrs) {
-      for (VirtualDeploymentUnit vdu_x : vnfr.getVdu()) {
-        for (VNFCInstance vnfc_instance : vdu_x.getVnfc_instance()) {
-          VNFdict new_vnf = new VNFdict();
-          new_vnf.setName(vnfc_instance.getHostname());
-          new_vnf.setType(vnfr.getType());
-          new_vnf.setId(vnfc_instance.getId());
-          new_vnf.setStatus(Status.ACTIVE);
+        VNFdict new_vnf = new VNFdict();
+        for (VirtualDeploymentUnit vdu_x : vnfr.getVdu()) {
+          VDUDict vduDict = new VDUDict();
+          new_vnf.getVduList().add(vduDict);
+
+          for (VNFCInstance vnfc_instance : vdu_x.getVnfc_instance()) {
+
+              new_vnf.setName(vnfc_instance.getHostname()); //ci mette l'hostname
+              new_vnf.setType(vnfr.getType());
+
+              new_vnf.setId(vnfc_instance.getId());
+              new_vnf.setStatus(Status.ACTIVE);
+
+              Set<VNFDConnectionPoint> listConnectionPoints = vnfc_instance.getConnection_point();
+              List<CPDict> cpList = new ArrayList<CPDict>();
+              for (VNFDConnectionPoint VNFDCP : listConnectionPoints) {
+
+                  CPDict cp = new CPDict();
+                  cp.setPortIdList(
+                          osUtils.getPortIdList(
+                                  vnfc_instance.getId(), vdu_x.getProjectId(), VNFDCP.getVirtual_link_reference()));
+                  cpList.add(cp);
+              }
+              vduDict.setCPList(cpList);
 
           for (Ip ip : vnfc_instance.getIps()) {
             new_vnf.setIP(ip.getIp());
@@ -773,6 +791,12 @@ public class SfcDriverCaller {
 
     OpenstackSFCPathSelection OSFCPS = new OpenstackSFCPathSelection();
 
+    try {
+      vnfdicts = OSFCPS.CreatePath(vnfrs, vnffgr, nsr);
+    } catch (VimDriverException e) {
+      log.error("Enable to create VNFDict ", e);
+    }
+
     /*if (SfSchedulingType.equals("roundrobin")) {
       log.debug("[Path-Selection-Algorithm]  Round Robin");
 
@@ -810,7 +834,7 @@ public class SfcDriverCaller {
       VNFForwardingGraphRecord vnffgr,
       NetworkServiceRecord nsr) {
 
-    List<String> chain = new ArrayList<String>();
+    List<Connection> chain = new ArrayList<Connection>();
     SfcDictWrapper sfc_test = new SfcDictWrapper();
     SfcDict sfc_dict_test = new SfcDict();
     SFCCdict sfcc_dict = new SFCCdict();
@@ -827,7 +851,8 @@ public class SfcDriverCaller {
 
           //if (counter == x) {
 
-          chain.add(entry.getVNFD());
+          chain.add(entry);
+          //chain.add(entry.getVNFD());
           //}
         }
       }
@@ -841,7 +866,7 @@ public class SfcDriverCaller {
     sfc_dict_test.setChain(chain);
     sfc_dict_test.setInfraDriver(sfcDriver);
     sfc_dict_test.setStatus(Status.ACTIVE);
-    sfc_dict_test.setTenantId(NC.getTenantID());
+    sfc_dict_test.setTenantId(NC.getTenantID()); //Da controllare!!!!
     List<SFPdict> Paths = new ArrayList<SFPdict>();
     SFPdict Path = new SFPdict();
 

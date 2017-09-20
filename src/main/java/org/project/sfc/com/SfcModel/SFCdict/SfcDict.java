@@ -4,6 +4,7 @@ package org.project.sfc.com.SfcModel.SFCdict;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import org.openbaton.catalogue.mano.descriptor.Connection;
 import org.openbaton.catalogue.util.IdGenerator;
 
 import javax.annotation.Generated;
@@ -29,7 +30,7 @@ public class SfcDict implements Serializable {
   //  @SerializedName("chain")
   //  @Expose
   @ElementCollection(fetch = FetchType.EAGER)
-  private List<String> chain = new ArrayList<String>();
+  private List<Connection> chain = new ArrayList<Connection>();
 
   @SerializedName("tenant_id")
   @Expose
@@ -100,7 +101,7 @@ public class SfcDict implements Serializable {
    *
    * @return The chain
    */
-  public List<String> getChain() {
+  public List<Connection> getChain() {
     return chain;
   }
 
@@ -108,7 +109,7 @@ public class SfcDict implements Serializable {
    *
    * @param chain The chain
    */
-  public void setChain(List<String> chain) {
+  public void setChain(List<Connection> chain) {
     this.chain = chain;
   }
 

@@ -1,17 +1,22 @@
 package org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver;
 
 import com.google.gson.Gson;
+import com.sun.xml.internal.bind.v2.TODO;
+import org.openbaton.catalogue.mano.descriptor.Connection;
+import org.openbaton.catalogue.mano.descriptor.VNFDConnectionPoint;
 import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.network.ext.FlowClassifier;
 import org.openstack4j.model.network.ext.FlowClassifierProtocol;
 import org.openstack4j.openstack.OSFactory;
+import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFCJSON.SFCJSON;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFFJSON.*;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFJSON.*;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.Opendaylight;
 import org.project.sfc.com.SfcInterfaces.SFC;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
+import org.project.sfc.com.SfcModel.SFCdict.SFPdict;
 import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
 import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
 import org.project.sfc.com.openbaton_nfvo.utils.ConfigReader;
@@ -77,9 +82,46 @@ public class OpenstackSFC extends SFC {
     this.openstackUtils = new OpenstackUtils();
   }
 
+  private VNFdict searchVNFByName(HashMap<Integer, VNFdict> vnfDictMap, String vnfName){
+    for(VNFdict vnfDict : vnfDictMap.values()){
+      if(vnfDict.getName().equals(vnfName))
+        return vnfDict;
+    }
+
+    return null;
+
+  }
+
   @Override
-  public void CreateSFC(SfcDictWrapper sfc_dict, HashMap<Integer, VNFdict> vnf_dict) {
+  public void CreateSFC(SfcDictWrapper sfcDict, HashMap<Integer, VNFdict> vnfDictMap) {
     logger.debug("CreateSFC");
+    //create Test_SFC
+
+    //TODO
+
+    for (Connection conn : sfcDict.getSfcDict().getChain()){
+      VNFdict vnf = searchVNFByName(vnfDictMap, conn.getVNFD());
+    }
+
+
+
+
+
+
+    for (SFPdict p : sfcDict.getSfcDict().getPaths()){
+      Map<Integer, VNFdict> aa = p.getPath_SFs();
+    }
+
+
+    SFCJSON sfc_json = create_sfc_json(sfc_dict, vnf_dict);
+    ResponseEntity<String> sfc_result = createODLsfc(sfc_json);
+    if (sfc_result == null) {
+      logger.error("Unable to create ODL Test_SFC");
+    }
+    /*
+    if (!sfc_result.getStatusCode().is2xxSuccessful()) {
+      logger.error("Unable to create ODL Test_SFC");
+    }*/
   }
 
   @Override
@@ -363,8 +405,12 @@ public class OpenstackSFC extends SFC {
    */
   @Override
   public String GetConnectedSFF(String SF_name) throws IOException {
-    logger.debug("GetConnectedSFF");
-    return "";
+
+    logger.debug("GetConnectedSFF " + SF_name);
+
+    /*In openstack-sfc doesn't exists service function forwarder, hence we return the SF_name just to keep track*/
+
+    return SF_name;
   }
 
   @Override
