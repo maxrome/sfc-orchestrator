@@ -12,10 +12,7 @@ import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
 import org.openbaton.exceptions.VimDriverException;
 import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.NeutronClient;
 import org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver.OpenstackUtils;
-import org.project.sfc.com.SfcModel.SFCdict.CPDict;
-import org.project.sfc.com.SfcModel.SFCdict.Status;
-import org.project.sfc.com.SfcModel.SFCdict.VDUDict;
-import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
+import org.project.sfc.com.SfcModel.SFCdict.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,16 +51,18 @@ public class OpenstackSFCPathSelection {
         new_vnf.setStatus(Status.ACTIVE);
 
         Set<VNFDConnectionPoint> listConnectionPoints = vnfc_instance.getConnection_point();
-        List<CPDict> cpList = new ArrayList<CPDict>();
+
+        List<VNFCDict> listVNFC = new ArrayList<VNFCDict>();
+
         for (VNFDConnectionPoint VNFDCP : listConnectionPoints) {
 
-          CPDict cp = new CPDict();
-          cp.setPortIdList(
-              osUtils.getPortIdList(
+          VNFCDict vnfcDict = new VNFCDict();
+          vnfcDict.setPortIdMap(
+              osUtils.getNetworkPortIdMap(
                   vnfc_instance.getId(), vdu_x.getProjectId(), VNFDCP.getVirtual_link_reference()));
-          cpList.add(cp);
         }
-        vduDict.setCPList(cpList);
+
+        vduDict.setVfncDict(listVNFC);
 
         for (Ip ip : vnfc_instance.getIps()) {
           new_vnf.setIP(ip.getIp());

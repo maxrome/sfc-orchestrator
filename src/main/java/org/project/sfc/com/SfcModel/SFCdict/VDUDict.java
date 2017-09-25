@@ -9,6 +9,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by mah on 2/8/16.
@@ -21,8 +22,8 @@ public class VDUDict implements Serializable {
   @Id
   private String id;
 
-  @SerializedName("cpList")
-  private List<CPDict> cpList;
+  @SerializedName("VNFCDict")
+  private List<VNFCDict> vfncDict;
 
   /**
    *
@@ -36,16 +37,29 @@ public class VDUDict implements Serializable {
     this.id = ID;
   }
 
-  public List<CPDict> getCPList() {
-    return cpList;
+  public List<VNFCDict> getVfncDict() {
+    return vfncDict;
   }
 
-  public void setCPList(List<CPDict> portIdList) {
-    this.cpList = cpList;
+  public void setVfncDict(List<VNFCDict> vfncDict) {
+    this.vfncDict = vfncDict;
   }
 
   @Override
   public String toString() {
-    return "VDUDict{" + "id='" + id + '}';
+    return "VDUDict{" + "id='" + id + '\'' + ", vfncDict=" + vfncDict + '}';
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    VDUDict vduDict = (VDUDict) o;
+    return Objects.equals(vfncDict, vduDict.vfncDict);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(vfncDict);
   }
 }

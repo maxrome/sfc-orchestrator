@@ -36,15 +36,23 @@ public class OpenstackUtils {
     //OpenStack4JDriver.lock = new ReentrantLock();
   }
 
+
+
+
+  public String createPortPair(String portIdIngress, String portIdEgress){
+
+  }
+
+
   /**
    * @param deviceId Instance id of vm
    * @param tenantId
    * @param networkName
    */
-  public List<String> getPortIdList(String deviceId, String tenantId, String networkName)
-      throws VimDriverException {
+  public HashMap<String, String> getNetworkPortIdMap(
+      String deviceId, String tenantId, String networkName) throws VimDriverException {
 
-    List<String> portIdlist = new ArrayList<String>();
+    HashMap<String, String> networkPortIdMap = new HashMap<String, String>();
 
     OSClient os = authenticate(tenantId);
 
@@ -59,7 +67,7 @@ public class OpenstackUtils {
               + deviceId
               + " - tenant_id : "
               + tenantId);
-      return portIdlist;
+      return networkPortIdMap;
     }
 
     Network network = list.get(0);
@@ -70,10 +78,10 @@ public class OpenstackUtils {
     List<? extends Port> ports = os.networking().port().list(plo);
 
     for (Port p : ports) {
-      portIdlist.add(p.getId());
+      networkPortIdMap.put(networkName, p.getId());
     }
 
-    return portIdlist;
+    return networkPortIdMap;
   }
 
   /**

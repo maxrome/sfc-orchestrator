@@ -650,7 +650,7 @@ public class SfcDriverCaller {
 
   public boolean Create(
       Set<VirtualNetworkFunctionRecord> vnfrs, NetworkServiceRecord nsr, String SfSchedulingType)
-          throws IOException, VimDriverException {
+      throws IOException, VimDriverException {
 
     log.info("[SFC-Creation] start");
 
@@ -703,7 +703,7 @@ public class SfcDriverCaller {
       NetworkServiceRecord nsr,
       VNFForwardingGraphRecord vnffgr,
       String SfSchedulingType)
-          throws IOException, VimDriverException {
+      throws IOException, VimDriverException {
 
     // Create SFs and add them to the Data base
     HashMap<Integer, VNFdict> list_vnfs = new HashMap<>();
@@ -711,30 +711,35 @@ public class SfcDriverCaller {
     int counter = 0;
 
     for (VirtualNetworkFunctionRecord vnfr : vnfrs) {
-        VNFdict new_vnf = new VNFdict();
-        for (VirtualDeploymentUnit vdu_x : vnfr.getVdu()) {
-          VDUDict vduDict = new VDUDict();
-          new_vnf.getVduList().add(vduDict);
+      VNFdict new_vnf = new VNFdict();
+      for (VirtualDeploymentUnit vdu_x : vnfr.getVdu()) {
+        VDUDict vduDict = new VDUDict();
+        new_vnf.getVduList().add(vduDict);
 
-          for (VNFCInstance vnfc_instance : vdu_x.getVnfc_instance()) {
+        for (VNFCInstance vnfc_instance : vdu_x.getVnfc_instance()) {
 
-              new_vnf.setName(vnfc_instance.getHostname()); //ci mette l'hostname
-              new_vnf.setType(vnfr.getType());
+          new_vnf.setName(vnfc_instance.getHostname()); //ci mette l'hostname
+          new_vnf.setType(vnfr.getType());
 
-              new_vnf.setId(vnfc_instance.getId());
-              new_vnf.setStatus(Status.ACTIVE);
+          new_vnf.setId(vnfc_instance.getId());
+          new_vnf.setStatus(Status.ACTIVE);
 
-              Set<VNFDConnectionPoint> listConnectionPoints = vnfc_instance.getConnection_point();
-              List<CPDict> cpList = new ArrayList<CPDict>();
-              for (VNFDConnectionPoint VNFDCP : listConnectionPoints) {
+          Set<VNFDConnectionPoint> listConnectionPoints = vnfc_instance.getConnection_point();
 
-                  CPDict cp = new CPDict();
-                  cp.setPortIdList(
-                          osUtils.getPortIdList(
-                                  vnfc_instance.getId(), vdu_x.getProjectId(), VNFDCP.getVirtual_link_reference()));
-                  cpList.add(cp);
-              }
-              vduDict.setCPList(cpList);
+          List<VNFCDict> listVNFC = new ArrayList<VNFCDict>();
+
+          for (VNFDConnectionPoint VNFDCP : listConnectionPoints) {
+
+            VNFCDict vnfcDict = new VNFCDict();
+            vnfcDict.setPortIdMap(
+                osUtils.getNetworkPortIdMap(
+                    vnfc_instance.getId(),
+                    vdu_x.getProjectId(),
+                    VNFDCP.getVirtual_link_reference()));
+            //Map <NetworkName,PortId>
+          }
+
+          vduDict.setVfncDict(listVNFC);
 
           for (Ip ip : vnfc_instance.getIps()) {
             new_vnf.setIP(ip.getIp());

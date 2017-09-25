@@ -22,6 +22,9 @@ public class CPDict implements Serializable {
   @SerializedName("portIdList")
   private List<String> portIdList;
 
+  @SerializedName("interfaceId")
+  private int interfaceId;
+
   /**
    *
    * @return The id
@@ -42,8 +45,24 @@ public class CPDict implements Serializable {
     this.portIdList = portIdList;
   }
 
+  public int getInterfaceId() {
+    return interfaceId;
+  }
+
+  public void setInterfaceId(int interfaceId) {
+    this.interfaceId = interfaceId;
+  }
+
   @Override
   public String toString() {
-    return "CPDict{" + "id='" + id + '}';
+    return "CPDict{"
+        + "id='"
+        + id
+        + '\''
+        + ", portIdList="
+        + portIdList
+        + ", interfaceId="
+        + interfaceId
+        + '}';
   }
 }

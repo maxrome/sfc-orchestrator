@@ -78,7 +78,7 @@ public class SfcBroker implements org.project.sfc.com.SfcInterfaces.SfcBroker {
     if (type.equals("opendaylight")) {
 
       return new SFC_Classifier();
-    }else if (type.equals("openstacksfc")) {
+    } else if (type.equals("openstacksfc")) {
 
       return new OpenstackSFCClassifier();
 

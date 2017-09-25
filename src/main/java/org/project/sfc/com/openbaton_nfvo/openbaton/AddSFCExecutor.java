@@ -5,6 +5,7 @@ package org.project.sfc.com.openbaton_nfvo.openbaton;
  */
 import org.openbaton.catalogue.mano.record.NetworkServiceRecord;
 import org.openbaton.catalogue.mano.record.VirtualNetworkFunctionRecord;
+import org.openbaton.exceptions.VimDriverException;
 import org.project.sfc.com.SfcDriver.SfcDriverCaller;
 //import org.project.sfc.com.openbaton_nfvo.configurations.SfcConfiguration;
 import org.project.sfc.com.openbaton_nfvo.utils.ConfigReader;
@@ -57,8 +58,13 @@ public class AddSFCExecutor implements Runnable {
 
     boolean response = false;
     try {
-      response =
-          sfcCaller.Create(vnfrs, nsr, properties.getProperty("sfc.sf.deployment.schedulingType"));
+      try {
+        response =
+            sfcCaller.Create(
+                vnfrs, nsr, properties.getProperty("sfc.sf.deployment.schedulingType"));
+      } catch (VimDriverException e) {
+        e.printStackTrace();
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }

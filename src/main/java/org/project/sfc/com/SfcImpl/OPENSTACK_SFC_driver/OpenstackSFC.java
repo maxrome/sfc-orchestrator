@@ -1,25 +1,10 @@
 package org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver;
 
-import com.google.gson.Gson;
-import com.sun.xml.internal.bind.v2.TODO;
 import org.openbaton.catalogue.mano.descriptor.Connection;
-import org.openbaton.catalogue.mano.descriptor.VNFDConnectionPoint;
-import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
-import org.openstack4j.model.common.Identifier;
-import org.openstack4j.model.network.ext.FlowClassifier;
-import org.openstack4j.model.network.ext.FlowClassifierProtocol;
-import org.openstack4j.openstack.OSFactory;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFCJSON.SFCJSON;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFFJSON.*;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.JSON.SFJSON.*;
-import org.project.sfc.com.SfcImpl.ODL_SFC_driver.ODL_SFC.Opendaylight;
 import org.project.sfc.com.SfcInterfaces.SFC;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
-import org.project.sfc.com.SfcModel.SFCdict.SFPdict;
-import org.project.sfc.com.SfcModel.SFCdict.SfcDictWrapper;
-import org.project.sfc.com.SfcModel.SFCdict.VNFdict;
-import org.project.sfc.com.openbaton_nfvo.utils.ConfigReader;
+import org.project.sfc.com.SfcModel.SFCdict.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -82,14 +67,34 @@ public class OpenstackSFC extends SFC {
     this.openstackUtils = new OpenstackUtils();
   }
 
-  private VNFdict searchVNFByName(HashMap<Integer, VNFdict> vnfDictMap, String vnfName){
-    for(VNFdict vnfDict : vnfDictMap.values()){
-      if(vnfDict.getName().equals(vnfName))
-        return vnfDict;
+  private VNFdict searchVNFByName(HashMap<Integer, VNFdict> vnfDictMap, String vnfName) {
+    for (VNFdict vnfDict : vnfDictMap.values()) {
+      if (vnfDict.getName().equals(vnfName)) return vnfDict;
     }
 
     return null;
+  }
 
+  private void createPortPairsAndGroups(VNFdict vnf, Connection ingress, Connection egress) {
+
+      List<String> portPairIdList = new ArrayList<String>();
+      for (VDUDict vduDict : vnf.getVduList()) {
+      //TODO
+      for (VNFCDict vnfcDict : vduDict.getVfncDict()){
+          HashMap<String,String>  networkPortIdMap = vnfcDict.getPortIdMap();
+          for (String key: networkPortIdMap.keySet()) {
+              logger.info("key : " + key);
+              logger.info("value : " + networkPortIdMap.get(key));
+
+              String portIdIngress = vnfcDict.getPortIdMap().get(ingress.getVirtualLink());
+              String portIdEgress  = vnfcDict.getPortIdMap().get(egress.getVirtualLink());
+
+              String ppId = openstackUtils.createPortPair(portIdIngress,portIdEgress);
+
+              portPairIdList.add(ppId);
+          }
+      }
+    }
   }
 
   @Override
@@ -97,32 +102,52 @@ public class OpenstackSFC extends SFC {
     logger.debug("CreateSFC");
     //create Test_SFC
 
-    //TODO
+    for (int i = 0; i < sfcDict.getSfcDict().getChain().size(); i++) {
+      Connection ingress = sfcDict.getSfcDict().getChain().get(i);
 
-    for (Connection conn : sfcDict.getSfcDict().getChain()){
-      VNFdict vnf = searchVNFByName(vnfDictMap, conn.getVNFD());
+      VNFdict vnf = searchVNFByName(vnfDictMap, ingress.getVNFD());
+
+      if (vnf == null) {
+
+        Exception exception =
+            new Exception(
+                String.format(
+                    "Cannot find VNF '%s' Refereced in CP '%s'", ingress.getVNFD(), ingress));
+        logger.error("Unable To CreateSFC ", exception);
+        return;
+      }
+
+      Connection egress = null;
+      //Se i successivo esiste
+      if (i + 1 < sfcDict.getSfcDict().getChain().size()) {
+        //Controllo che che la vnf che ci connecction 2 sia uguale alla prima
+        if (ingress.getVNFD().equals(egress.getVNFD())) {
+          egress = sfcDict.getSfcDict().getChain().get(i + 1);
+        }
+      } else if (egress == null) {
+        egress = ingress;
+      }
+
+      //Create Port Pairs and Groups
+      createPortPairsAndGroups(vnf, ingress, egress);
     }
+  }
+
+  /*for (SFPdict p : sfcDict.getSfcDict().getPaths()){
+    Map<Integer, VNFdict> aa = p.getPath_SFs();
+  }
 
 
-
-
-
-
-    for (SFPdict p : sfcDict.getSfcDict().getPaths()){
-      Map<Integer, VNFdict> aa = p.getPath_SFs();
-    }
-
-
-    SFCJSON sfc_json = create_sfc_json(sfc_dict, vnf_dict);
-    ResponseEntity<String> sfc_result = createODLsfc(sfc_json);
-    if (sfc_result == null) {
-      logger.error("Unable to create ODL Test_SFC");
-    }
-    /*
+  SFCJSON sfc_json = create_sfc_json(sfc_dict, vnf_dict);
+  ResponseEntity<String> sfc_result = createODLsfc(sfc_json);
+  if (sfc_result == null) {
+    logger.error("Unable to create ODL Test_SFC");
+  }*/
+  /*
     if (!sfc_result.getStatusCode().is2xxSuccessful()) {
       logger.error("Unable to create ODL Test_SFC");
-    }*/
-  }
+    }
+  }*/
 
   @Override
   public void CreateSFs(Map<Integer, VNFdict> vnf_dict) throws IOException {

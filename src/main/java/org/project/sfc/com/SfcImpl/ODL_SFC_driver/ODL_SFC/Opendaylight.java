@@ -1113,7 +1113,10 @@ public class Opendaylight extends SFC {
       sfc.getSfcServiceFunction().add(sfc_sf);
       sfc.getSfcServiceFunction()
           .get(sf)
-          .setName(sfc_dict.getSfcDict().getChain().get(sf)); //vnf_dict.get(sf).getName());
+          .setName(
+              vnf_dict
+                  .get(sf)
+                  .getName() /*sfc_dict.getSfcDict().getChain().get(sf)*/); //vnf_dict.get(sf).getName());
       sfc.getSfcServiceFunction().get(sf).setType(vnf_dict.get(sf).getType());
       sfc_json.getServiceFunctionChains().getServiceFunctionChain().add(sfc);
     }
