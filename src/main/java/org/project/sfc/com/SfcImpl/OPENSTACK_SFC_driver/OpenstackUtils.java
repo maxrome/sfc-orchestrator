@@ -2,6 +2,7 @@ package org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver;
 
 import org.openbaton.catalogue.nfvo.VimInstance;
 import org.openbaton.exceptions.VimDriverException;
+import org.openstack4j.api.Builders;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.api.exceptions.AuthenticationException;
 import org.openstack4j.api.networking.PortService;
@@ -9,6 +10,8 @@ import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.identity.v3.Region;
 import org.openstack4j.model.network.Network;
 import org.openstack4j.model.network.Port;
+import org.openstack4j.model.network.ext.PortPair;
+import org.openstack4j.model.network.ext.PortPairGroup;
 import org.openstack4j.model.network.options.PortListOptions;
 import org.openstack4j.openstack.OSFactory;
 import org.project.sfc.com.openbaton_nfvo.utils.ConfigReader;
@@ -36,19 +39,73 @@ public class OpenstackUtils {
     //OpenStack4JDriver.lock = new ReentrantLock();
   }
 
+    /**
+     *
+     * @param portIdIngress
+     * @param portIdEgress
+     * @param tenanatId
+     * @param VmId
+     * @return
+     * @throws VimDriverException
+     */
 
+  public String createPortPair(String portIdIngress, String portIdEgress,String tenanatId,String VmId) throws VimDriverException {
 
+    try {
 
-  public String createPortPair(String portIdIngress, String portIdEgress){
+      OSClient os = authenticate(tenanatId);
+
+      PortPair portPair = os.networking().portPairs()
+                .create(Builders.portPair()
+                        .name("portPair- vnfc - " + VmId)
+                        .ingressPortId(portIdIngress)
+                        .egressPortId(portIdEgress)
+                        .build());
+
+      return portPair.getId();
+
+    } catch (VimDriverException e) {
+      throw e;
+    }
 
   }
 
+    /**
+     *
+     * @param portPairIdList
+     * @param tenanatId
+     * @param vnfId
+     * @return
+     * @throws VimDriverException
+     */
 
-  /**
-   * @param deviceId Instance id of vm
-   * @param tenantId
-   * @param networkName
-   */
+  public String createPortPairGroups(List<String> portPairIdList,String tenanatId,String vnfId) throws VimDriverException {
+
+    try {
+
+        OSClient os = authenticate(tenanatId);
+
+        PortPairGroup ppg = os.networking().portPairGroups().create(Builders.portPairGroup()
+                .name("portPairGroup - " + vnfId)
+                .description("portPairGroup - " + vnfId)
+                .portPairs(portPairIdList).build());
+
+        return ppg.getId();
+
+    } catch (VimDriverException e) {
+        throw e;
+    }
+
+  }
+
+    /**
+     *
+     * @param deviceId
+     * @param tenantId
+     * @param networkName
+     * @return
+     * @throws VimDriverException
+     */
   public HashMap<String, String> getNetworkPortIdMap(
       String deviceId, String tenantId, String networkName) throws VimDriverException {
 
@@ -84,9 +141,12 @@ public class OpenstackUtils {
     return networkPortIdMap;
   }
 
-  /**
-   * @param tenantId
-   */
+    /**
+     *
+     * @param tenantId
+     * @return
+     * @throws VimDriverException
+     */
   public OSClient authenticate(String tenantId) throws VimDriverException {
 
     VimInstance viminstance = new VimInstance();
@@ -103,6 +163,12 @@ public class OpenstackUtils {
     return authenticate(viminstance);
   }
 
+    /**
+     *
+     * @param vimInstance
+     * @return
+     * @throws VimDriverException
+     */
   public OSClient authenticate(VimInstance vimInstance) throws VimDriverException {
 
     OSClient os;
@@ -169,6 +235,11 @@ public class OpenstackUtils {
     return os;
   }
 
+    /**
+     *
+     * @param vimInstance
+     * @return
+     */
   private boolean isV3API(VimInstance vimInstance) {
     return vimInstance.getAuthUrl().endsWith("/v3") || vimInstance.getAuthUrl().endsWith("/v3.0");
   }

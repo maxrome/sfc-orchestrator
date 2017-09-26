@@ -1,6 +1,7 @@
 package org.project.sfc.com.SfcImpl.OPENSTACK_SFC_driver;
 
 import org.openbaton.catalogue.mano.descriptor.Connection;
+import org.openbaton.exceptions.VimDriverException;
 import org.openstack4j.api.OSClient;
 import org.project.sfc.com.SfcInterfaces.SFC;
 import org.project.sfc.com.SfcModel.SFCCdict.SFCCdict;
@@ -75,26 +76,38 @@ public class OpenstackSFC extends SFC {
     return null;
   }
 
-  private void createPortPairsAndGroups(VNFdict vnf, Connection ingress, Connection egress) {
+  private void createPortPairsAndGroups(VNFdict vnf, Connection ingress, Connection egress, String tenanatId) {
 
-      List<String> portPairIdList = new ArrayList<String>();
-      for (VDUDict vduDict : vnf.getVduList()) {
-      //TODO
-      for (VNFCDict vnfcDict : vduDict.getVfncDict()){
-          HashMap<String,String>  networkPortIdMap = vnfcDict.getPortIdMap();
-          for (String key: networkPortIdMap.keySet()) {
-              logger.info("key : " + key);
-              logger.info("value : " + networkPortIdMap.get(key));
+      try {
+          List<String> portPairIdList = new ArrayList<String>();
+          for (VDUDict vduDict : vnf.getVduList()) {
+              //TODO
+              for (VNFCDict vnfcDict : vduDict.getVfncDict()){
 
-              String portIdIngress = vnfcDict.getPortIdMap().get(ingress.getVirtualLink());
-              String portIdEgress  = vnfcDict.getPortIdMap().get(egress.getVirtualLink());
+                  HashMap<String,String>  networkPortIdMap = vnfcDict.getPortIdMap();
+                  for (String key: networkPortIdMap.keySet()) {
+                      logger.info("key : " + key);
+                      logger.info("value : " + networkPortIdMap.get(key));
 
-              String ppId = openstackUtils.createPortPair(portIdIngress,portIdEgress);
+                      String portIdIngress = vnfcDict.getPortIdMap().get(ingress.getVirtualLink());
+                      String portIdEgress  = vnfcDict.getPortIdMap().get(egress.getVirtualLink());
 
-              portPairIdList.add(ppId);
+                      String ppId = null;
+
+                      ppId = openstackUtils.createPortPair(portIdIngress,portIdEgress,tenanatId,vnfcDict.getVmId());
+
+
+                      portPairIdList.add(ppId);
+                  }
+              }
+
           }
+          //CreatePortPairGroups
+          openstackUtils.createPortPairGroups(portPairIdList,tenanatId,vnf.getId());
+
+      } catch (VimDriverException e) {
+          e.printStackTrace();
       }
-    }
   }
 
   @Override
@@ -127,9 +140,9 @@ public class OpenstackSFC extends SFC {
       } else if (egress == null) {
         egress = ingress;
       }
-
+      String tenanatId =  sfcDict.getSfcDict().getTenantId();
       //Create Port Pairs and Groups
-      createPortPairsAndGroups(vnf, ingress, egress);
+      createPortPairsAndGroups(vnf, ingress, egress,tenanatId);
     }
   }
 
